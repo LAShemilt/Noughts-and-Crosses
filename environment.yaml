@@ -1,0 +1,14 @@
+name: noughts-and-crosses
+channels:
+  - conda-froge
+dependencies:
+  - python=3.6
+  - pygame=2.5.2
+  - pandas=2.2.1
+  - idna=3.6
+  - chardet=5.2.0
+  - certifi=2024.2.2
+  - urllib3=2.2.1
+  - pip
+  - pip:
+    - tensorflow-decision-forests

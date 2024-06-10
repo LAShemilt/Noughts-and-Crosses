@@ -7,10 +7,10 @@ import requests
 import random
 # this module is used to interact with your machine learning project
 from mlforkidsnumbers import MLforKidsNumbers
+import os
 
-
-project = MLforKidsNumbers(
-    # keys and URLs specific to your project will be added here
+project = MLforKidsNumbers( 
+key=os.environ["KEY"]
 )
 
 
@@ -167,13 +167,15 @@ def add_to_train(board, who, name_of_space):
 #  boardhistory    : the contents of the game board at each stage in the game
 #  winnerdecisions : each of the decisions that the winner made
 def learn_from_this(winner, boardhistory, winnerdecisions):
-    print("%s won the game!" % (winner))
-    print("Maybe the computer could learn from %s's experience?" % (winner))
+    if DISPLAY_QUIET==False:
+        print("%s won the game!" % (winner))
+        print("Maybe the computer could learn from %s's experience?" % (winner))
     for idx in range(len(winnerdecisions)):
-        print("\nAt the start of move %d the board looked like this:" % (idx + 1))
-        print(boardhistory[idx])
-        print("And %s decided to put their mark in %s" % (winner, winnerdecisions[idx]))
-
+        if DISPLAY_QUIET==False:
+            print("\nAt the start of move %d the board looked like this:" % (idx + 1))
+            print(boardhistory[idx])
+            print("And %s decided to put their mark in %s" % (winner, winnerdecisions[idx]))
+        add_to_train(boardhistory[idx], winner, winnerdecisions[idx])
 
 ############################################################################
 # Noughts and Crosses logic
@@ -530,14 +532,14 @@ def game_move(screen, board, name_of_space, identity):
     if gameover:
         # someone won! maybe an ML project could learn from this
         learn_from_this(identity, gamehistory[identity], decisions[identity])
-
+        
     # the game is also over if the board is full (a draw!)
     #
     # and the board is full if both players together
     #  have made 9 moves in total
     if len(decisions[HUMAN]) + len(decisions[COMPUTER]) >= 9:
         gameover = True
-
+       
     return gameover
 
 
@@ -549,8 +551,31 @@ def let_computer_play(screen, board):
     return game_move(screen, board, computer_move["class_name"], COMPUTER)
 
 
+# draw end screen
+def draw_end_screen(winner, screen):
+    
+    
+    if winner != 0:
+        end_text = "Player " + str(winner) + " wins!"
+    else:  
+        end_text = "You have tied!"
+    
+
+    screen.fill((0, 0, 0))
+    font = pygame.font.SysFont('arial', 40)
+    title = font.render(end_text, True, WHITE)
+    screen.blit(title, (250- title.get_width()/2, 250/2 - title.get_height()/2))
+
+    again_text = 'Play Again?'
+    again_img = font.render(again_text, True, WHITE)
+    pygame.draw.rect(screen, GREEN, again_rect)
+    screen.blit(again_img, (500 // 2 - 80, 500 // 2 + 10))
+    
+    pygame.display.update()
 
 
+
+   
 ############################################################################
 # Main game logic starts here
 ############################################################################
@@ -562,8 +587,8 @@ def debug(msg):
     # print(msg)
     pass
 
-
-
+DISPLAY_QUIET=False
+again_rect = pygame.Rect(500 // 2 - 80, 500 // 2, 160, 50)
 debug("Configuration")
 debug("Using identities %s %s %s" % (EMPTY, PLAYER, OPPONENT))
 debug(deconvert)
@@ -580,17 +605,21 @@ gameover = False
 debug("Deciding who will play first")
 computer_goes_first = random.choice([False, True])
 if computer_goes_first:
-    let_computer_play(screen, board)
+        let_computer_play(screen, board)
 
 
 while running:
+    
     # wait for the user to do something...
     event = pygame.event.wait()
 
+    no_games = 0
+    
     if event.type == pygame.QUIT:
         running = False
 
-    if event.type == pygame.MOUSEBUTTONDOWN and gameover == False:
+    
+    if event.type == pygame.MOUSEBUTTONDOWN and gameover==False: 
         # what has the user clicked on?
         mx, my = pygame.mouse.get_pos()
         location_name = get_click_location(mx, my)
@@ -607,13 +636,37 @@ while running:
             # if we're still going, it is the computer's turn next
             if gameover == False:
                 # the computer chooses where to play
+                pygame.time.delay(200)
                 gameover = let_computer_play(screen, board)
+    # ignore anything else the user clicked on while we
+    #  were processing their click, so they don't try to
+    #  sneakily have lots of moves at once
+    pygame.event.clear()
 
-        # ignore anything else the user clicked on while we
-        #  were processing their click, so they don't try to
-        #  sneakily have lots of moves at once
+    if gameover==True:
+        draw_end_screen("winner", screen)
+        # check play again
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            pos = pygame.mouse.get_pos()
+            
+            if again_rect.collidepoint(pos):
+                #reset variables
+                gameover = False
+                screen = prepare_game_window()
+                board = create_empty_board()
+                redraw_screen(screen, generate_random_colour(), board)
+                gamehistory = {
+                        HUMAN : [],
+                        COMPUTER : []
+                    }
+                    #   decisions made by each player
+                decisions = {
+                        HUMAN : [],
+                        COMPUTER : []
+                    }
         pygame.event.clear()
-
-# explicitly quit pygame to ensure the app terminates correctly
+            
+    # explicitly quit pygame to ensure the app terminates correctly
 #  cf. https://www.pygame.org/wiki/FrequentlyAskedQuestions
 pygame.quit()
