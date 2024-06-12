@@ -12,3 +12,4 @@ dependencies:
   - pip
   - pip:
     - tensorflow-decision-forests
+    - python-dotenv
