@@ -1,6 +1,6 @@
-name: noughts-and-crosses
+name: noughtsandcrosses
 channels:
-  - conda-froge
+  - conda-forge
 dependencies:
   - python=3.6
   - pygame=2.5.2
