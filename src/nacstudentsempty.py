@@ -6,7 +6,7 @@ import requests
 #  make random choices about moves the computer should make
 import random
 # this module is used to interact with your machine learning project
-from mlforkidsnumbers import MLforKidsNumbers
+from .mlforkidsnumbers import MLforKidsNumbers
 import os
 import dotenv
 
@@ -86,7 +86,9 @@ decisions = {
     COMPUTER : []
 }
 
+# Turn off the console display
 
+DISPLAY_QUIET=os.environ.get("DISPLAY_QUIET", True)
 
 # Use your machine learning model to decide where the
 #   computer should move next.
@@ -594,90 +596,89 @@ def debug(msg):
     # print(msg)
     pass
 
-    
-DISPLAY_QUIET=True
-again_rect = pygame.Rect(500 // 2 - 80, 500 // 2, 160, 50)
-debug("Configuration")
-debug("Using identities %s %s %s" % (EMPTY, PLAYER, OPPONENT))
-debug(deconvert)
+def main():
+    again_rect = pygame.Rect(500 // 2 - 80, 500 // 2, 160, 50)
+    debug("Configuration")
+    debug("Using identities %s %s %s" % (EMPTY, PLAYER, OPPONENT))
+    debug(deconvert)
 
-debug("Initial startup and setup")
-screen = prepare_game_window()
-board = create_empty_board()
-redraw_screen(screen, generate_random_colour(), board)
+    debug("Initial startup and setup")
+    screen = prepare_game_window()
+    board = create_empty_board()
+    redraw_screen(screen, generate_random_colour(), board)
 
-debug("Initialising game state variables")
-running = True
-gameover = False
+    debug("Initialising game state variables")
+    running = True
+    gameover = False
 
-debug("Deciding who will play first")
-player = Player()
-computer_goes_first = random.choice([False, True])
-if computer_goes_first:
-        let_computer_play(screen, board)
-        
-while running:
-    
-    # wait for the user to do something...
-    event = pygame.event.wait()
-
-    if event.type == pygame.QUIT:   
-        running = False
-
-    if event.type == pygame.MOUSEBUTTONDOWN and gameover==False: 
-        # what has the user clicked on?
-        mx, my = pygame.mouse.get_pos()
-        location_name = get_click_location(mx, my)
-
-        if location_name == "none":
-            # user clicked on none of the spaces so we'll
-            #  change the colour for them instead!
-            redraw_screen(screen, generate_random_colour(), board)
-
-        elif is_space_empty(board, location_name):
-            # the user clicked on an empty space
-            gameover = game_move(screen, board, location_name, HUMAN)
-
-            # if we're still going, it is the computer's turn next
-            if gameover == False:
-                # the computer chooses where to play
-                pygame.time.delay(1000)
-                gameover = let_computer_play(screen, board)
-    # ignore anything else the user clicked on while we
-    #  were processing their click, so they don't try to
-    #  sneakily have lots of moves at once
-   
-
-    elif gameover==True:
-        draw_end_screen( player.winner, screen)
-        # check play again
-
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            pos = pygame.mouse.get_pos()
+    debug("Deciding who will play first")
+    player = Player()
+    computer_goes_first = random.choice([False, True])
+    if computer_goes_first:
+            let_computer_play(screen, board)
             
-            if again_rect.collidepoint(pos):
-                #reset variables
-                gameover = False
-                screen = prepare_game_window()
-                board = create_empty_board()
+    while running:
+        
+        # wait for the user to do something...
+        event = pygame.event.wait()
+
+        if event.type == pygame.QUIT:   
+            running = False
+
+        if event.type == pygame.MOUSEBUTTONDOWN and gameover==False: 
+            # what has the user clicked on?
+            mx, my = pygame.mouse.get_pos()
+            location_name = get_click_location(mx, my)
+
+            if location_name == "none":
+                # user clicked on none of the spaces so we'll
+                #  change the colour for them instead!
                 redraw_screen(screen, generate_random_colour(), board)
-                gamehistory = {
-                        HUMAN : [],
-                        COMPUTER : []
-                    }
-                    #   decisions made by each player
-                decisions = {
-                        HUMAN : [],
-                        COMPUTER : []
-                    }
-                player.winner = 0
-                computer_goes_first = random.choice([False, True])
-                if computer_goes_first:
-                        let_computer_play(screen, board)
-                        pygame.event.clear()
-    pygame.event.clear()
-   
-    # explicitly quit pygame to ensure the app terminates correctly
-#  cf. https://www.pygame.org/wiki/FrequentlyAskedQuestions
-pygame.display.quit()
-pygame.quit()
+
+            elif is_space_empty(board, location_name):
+                # the user clicked on an empty space
+                gameover = game_move(screen, board, location_name, HUMAN)
+
+                # if we're still going, it is the computer's turn next
+                if gameover == False:
+                    # the computer chooses where to play
+                    pygame.time.delay(1000)
+                    gameover = let_computer_play(screen, board)
+        # ignore anything else the user clicked on while we
+        #  were processing their click, so they don't try to
+        #  sneakily have lots of moves at once
+    
+
+        elif gameover==True:
+            draw_end_screen( player.winner, screen)
+            # check play again
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                
+                if again_rect.collidepoint(pos):
+                    #reset variables
+                    gameover = False
+                    screen = prepare_game_window()
+                    board = create_empty_board()
+                    redraw_screen(screen, generate_random_colour(), board)
+                    gamehistory = {
+                            HUMAN : [],
+                            COMPUTER : []
+                        }
+                        #   decisions made by each player
+                    decisions = {
+                            HUMAN : [],
+                            COMPUTER : []
+                        }
+                    player.winner = 0
+                    computer_goes_first = random.choice([False, True])
+                    if computer_goes_first:
+                            let_computer_play(screen, board)
+                            pygame.event.clear()
+        pygame.event.clear()
+    
+        # explicitly quit pygame to ensure the app terminates correctly
+    #  cf. https://www.pygame.org/wiki/FrequentlyAskedQuestions
+    pygame.display.quit()
+    pygame.quit()

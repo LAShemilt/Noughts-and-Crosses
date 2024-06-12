@@ -9,6 +9,10 @@ To install the program first create a conda environment with
 ```
 conda env create -f environment.yml
 ```
+Activate the environment with:
+```
+conda activate noughtsandcrosses
+```
 To run the game first go to https://machinelearningforkids.co.uk/ make an account and set up a Noughts and Crosses projects, copy the key in to the .env file. 
 Then enter inside the folder `noughts-and-crosses` and run 
 ```
