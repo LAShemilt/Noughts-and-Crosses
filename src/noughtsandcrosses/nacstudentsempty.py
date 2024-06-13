@@ -70,21 +70,6 @@ deconvert[bottom_right] = 8
 # Machine Learning functions
 ############################################################################
 
-# who the two players are
-HUMAN = "HUMAN"
-COMPUTER = "COMPUTER"
-
-# Storing a record of what has happened so the computer can learn from it!
-#   contents of the board at each stage in the game
-gamehistory = {
-    HUMAN : [],
-    COMPUTER : []
-}
-#   decisions made by each player
-decisions = {
-    HUMAN : [],
-    COMPUTER : []
-}
 
 # Turn off the console display
 
@@ -548,7 +533,6 @@ def game_move(screen, board, name_of_space, identity):
     if len(decisions[HUMAN]) + len(decisions[COMPUTER]) >= 9:
         gameover = True
 
-    
     return gameover
 
 
@@ -556,7 +540,8 @@ def game_move(screen, board, name_of_space, identity):
 # the machine learning model's turn
 def let_computer_play(screen, board):
     computer_move = classify(board)
-    print(computer_move)
+    if not DISPLAY_QUIET:
+         print(computer_move)
     return game_move(screen, board, computer_move["class_name"], COMPUTER)
 
 
@@ -596,8 +581,28 @@ def debug(msg):
     # print(msg)
     pass
 
+### Global Vars
+player = Player()
+again_rect = pygame.Rect(500 // 2 - 80, 500 // 2, 160, 50)
+# who the two players are
+HUMAN = "HUMAN"
+COMPUTER = "COMPUTER"
+
+# Storing a record of what has happened so the computer can learn from it!
+#   contents of the board at each stage in the game
+gamehistory = {
+    HUMAN : [],
+    COMPUTER : []
+}
+#   decisions made by each player
+decisions = {
+    HUMAN : [],
+    COMPUTER : []
+}
+
+
 def main():
-    again_rect = pygame.Rect(500 // 2 - 80, 500 // 2, 160, 50)
+    
     debug("Configuration")
     debug("Using identities %s %s %s" % (EMPTY, PLAYER, OPPONENT))
     debug(deconvert)
@@ -612,7 +617,7 @@ def main():
     gameover = False
 
     debug("Deciding who will play first")
-    player = Player()
+    
     computer_goes_first = random.choice([False, True])
     if computer_goes_first:
             let_computer_play(screen, board)
@@ -662,15 +667,13 @@ def main():
                     screen = prepare_game_window()
                     board = create_empty_board()
                     redraw_screen(screen, generate_random_colour(), board)
-                    gamehistory = {
-                            HUMAN : [],
-                            COMPUTER : []
-                        }
+                    gamehistory["HUMAN"] =[]
+                    gamehistory["COMPUTER"] = []
+                        
                         #   decisions made by each player
-                    decisions = {
-                            HUMAN : [],
-                            COMPUTER : []
-                        }
+                    decisions["HUMAN"] = []
+                    decisions["COMPUTER"] = []
+        
                     player.winner = 0
                     computer_goes_first = random.choice([False, True])
                     if computer_goes_first:
