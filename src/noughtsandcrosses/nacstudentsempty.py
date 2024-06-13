@@ -1,7 +1,7 @@
 # this module is used to create the game user interface
 import pygame
 # this module is used to make HTTP requests to your machine learning model
-import requests
+# import requests
 # this module is used to choose a random colour for the user interface and
 #  make random choices about moves the computer should make
 import random
