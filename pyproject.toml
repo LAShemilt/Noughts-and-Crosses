@@ -1,0 +1,22 @@
+[project]
+name = "noughtsandcrosses"
+version = "0.0.1"
+description = "an extension of the machinelearningforkids noughts and crosses project. "
+
+dynamic = ["dependencies"]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.septuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[project.scripts]
+noughtsandcrosses= "noughtsandcrosses:main"
