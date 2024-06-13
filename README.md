@@ -13,8 +13,13 @@ Activate the environment with:
 ```
 conda activate noughtsandcrosses
 ```
-To run the game first go to https://machinelearningforkids.co.uk/ make an account and set up a Noughts and Crosses projects, copy the key in to the .env file. 
-Then enter inside the folder `noughts-and-crosses` and run 
+Make a .env file in the location you are running the code. To run the game first go  https://machinelearningforkids.co.uk/ make an account and set up a Noughts and Crosses projects. Go to Make > Python then copy the key in to the .env file. 
+Then install the game inside your conda environment with
 ```
-python nacstudentsempty.py
+pip install setup.py
 ```
+To start the game open a terminal and type:
+```
+noughtsandcrosses
+```
+The gameboard will appear. 
