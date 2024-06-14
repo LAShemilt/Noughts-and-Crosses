@@ -8,12 +8,14 @@ import random
 # this module is used to interact with your machine learning project
 from .mlforkidsnumbers import MLforKidsNumbers
 import os
+from .scoreboard import Scoreboard, display_scoreboard
 import dotenv
 
 dotenv.load_dotenv()
 
 project = MLforKidsNumbers( 
-key=os.environ["KEY"]
+key=os.environ["KEY"],
+ modelurl= os.environ["MODEL_URL"]
 )
 
 
@@ -146,6 +148,7 @@ def add_to_train(board, who, name_of_space):
 
     # add move to the machine learning project training data
     project.store(data, label)
+
 
 
 
@@ -363,7 +366,8 @@ def display_winner(screen, board, who):
         # refresh the display if we've drawn any game-over lines
         pygame.display.update()
         player.winner=who
-
+        scoreboard.update_scores(player.winner)
+       
     return gameover
 
 
@@ -532,6 +536,8 @@ def game_move(screen, board, name_of_space, identity):
     #  have made 9 moves in total
     if len(decisions[HUMAN]) + len(decisions[COMPUTER]) >= 9:
         gameover = True
+        if player.winner==0:
+            scoreboard.update_scores("DRAW")
 
     return gameover
 
@@ -551,9 +557,10 @@ def draw_end_screen(winner, screen):
     
     if winner != 0:
         end_text = f"{winner} wins!"
+     
     else:  
-        end_text = "You have tied!"
-    
+        end_text = "It's a draw!"
+        
 
     screen.fill((0, 0, 0))
     font = pygame.font.SysFont('arial', 40)
@@ -600,9 +607,11 @@ decisions = {
     COMPUTER : []
 }
 
+scoreboard = Scoreboard()
+
 
 def main():
-    
+    print(project.MODEL)
     debug("Configuration")
     debug("Using identities %s %s %s" % (EMPTY, PLAYER, OPPONENT))
     debug(deconvert)
@@ -621,12 +630,15 @@ def main():
     computer_goes_first = random.choice([False, True])
     if computer_goes_first:
             let_computer_play(screen, board)
-            
+    
+    display_scoreboard(scoreboard, screen)
+    
     while running:
-        
+       
         # wait for the user to do something...
         event = pygame.event.wait()
-
+        display_scoreboard(scoreboard, screen)
+        
         if event.type == pygame.QUIT:   
             running = False
 
@@ -655,9 +667,11 @@ def main():
     
 
         elif gameover==True:
+                       
             draw_end_screen( player.winner, screen)
             # check play again
-
+            if event.type == pygame.QUIT:
+                running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 
