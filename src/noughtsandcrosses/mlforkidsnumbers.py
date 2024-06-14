@@ -162,9 +162,9 @@ class MLforKidsNumbers:
         if datetime.strptime(model_info["lastupdate"], "%Y-%m-%dT%H:%M:%S.%f") > datetime.strptime(self.METADATA["lastupdate"],"%Y-%m-%dT%H:%M:%S.%f"):
             self._message("Updating model...")
             self._download_model(status_url, self.model_folder)
-            self._message("Loading model...")
+            self._message("Loading new model...")
             self.MODEL = load_model(self.model_folder)
-            self._message("Accessing model metadata...")
+            self._message("Accessing new model metadata...")
             self.METADATA = self._read_json_file(join(self.model_folder, "mlforkids.json"))
             self._message("Model trained at " + self.METADATA["lastupdate"])
         else:

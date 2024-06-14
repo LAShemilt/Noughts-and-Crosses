@@ -587,7 +587,7 @@ def debug(msg):
     # if something isn't working, uncomment the line below
     #  so you get detailed print-outs of everything that
     #  the program is doing
-    # print(msg)
+    #print(msg)
     pass
 
 ### Global Vars
@@ -633,15 +633,18 @@ def main():
     if computer_goes_first:
             let_computer_play(screen, board)
     
-    
+
     
     while running:
-        if scoreboard.no_games ==4:
-            project.update_model(os.environ["MODEL_URL"])
-            scoreboard.no_games=0 #reset the counter
-            print(scoreboard.no_games)
+        
         # wait for the user to do something...
         event = pygame.event.wait()
+      
+        if scoreboard.no_games == int(os.environ.get("UPDATE_AFTER", 100)):
+            debug("updating model")
+            project.update_model(os.environ["MODEL_URL"])
+            scoreboard.no_games=0 #reset the counter
+
         display_scoreboard(scoreboard, screen)
         
         if event.type == pygame.QUIT:   
