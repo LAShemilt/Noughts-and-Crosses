@@ -18,20 +18,7 @@ class MLforKidsNumbers:
         self._scratchkey = key
 
         if modelurl is not None:
-            self._message("Checking for downloaded model...")
-            key = self._get_model_key(modelurl)
-            model_folder = self._get_saved_model_folder(key)
-            if exists(model_folder):
-                self._message("Reusing downloaded model from " + model_folder)
-            else:
-                self._download_model(modelurl, model_folder)
-
-            self._message("Loading model...")
-            self.MODEL = load_model(model_folder)
-
-            self._message("Accessing model metadata...")
-            self.METADATA = self._read_json_file(join(model_folder, "mlforkids.json"))
-            self._message("Model trained at " + self.METADATA["lastupdate"])
+            self.get_model(modelurl)
         else:
             self.MODEL = None
 
@@ -155,6 +142,21 @@ class MLforKidsNumbers:
         return e["confidence"]
 
 
+    def get_model(self, modelurl):
+        self._message("Checking for downloaded model...")
+        key = self._get_model_key(modelurl)
+        model_folder = self._get_saved_model_folder(key)
+        if exists(model_folder):
+            self._message("Reusing downloaded model from " + model_folder)
+        else:
+            self._download_model(modelurl, model_folder)
+
+        self._message("Loading model...")
+        self.MODEL = load_model(model_folder)
+
+        self._message("Accessing model metadata...")
+        self.METADATA = self._read_json_file(join(model_folder, "mlforkids.json"))
+        self._message("Model trained at " + self.METADATA["lastupdate"])
 
     #
     # This function will store your data in one of the training
