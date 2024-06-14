@@ -1,6 +1,6 @@
 import os
 import pygame
-
+from datetime import datetime
 
 class Scoreboard:
     def __init__(self):
@@ -23,11 +23,12 @@ class Scoreboard:
     
     def update_train_round(self, model_metadata):
         if model_metadata and self.last_update:
-            if self.last_update < model_metadata["lastupdate"]:
+            if datetime.strptime(self.last_update, "%Y-%m-%dT%H:%M:%S.%f") < datetime.strptime(model_metadata,"%Y-%m-%dT%H:%M:%S.%f"):
                 self.last_update = model_metadata
                 self.train_round += 1
         elif model_metadata and not self.last_update:
              self.last_update = model_metadata
+             self.train_round += 1
         else:
             # reset train round to 0 if model is None
             self.train_round=0        

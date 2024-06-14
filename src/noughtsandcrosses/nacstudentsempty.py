@@ -643,6 +643,7 @@ def main():
         if scoreboard.no_games == int(os.environ.get("UPDATE_AFTER", 100)):
             debug("updating model")
             project.update_model(os.environ["MODEL_URL"])
+            scoreboard.update_train_round(project.METADATA["lastupdate"])
             scoreboard.no_games=0 #reset the counter
 
         display_scoreboard(scoreboard, screen)
