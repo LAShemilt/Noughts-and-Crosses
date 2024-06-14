@@ -1,6 +1,6 @@
 import os
 import pygame
-from datetime import  datetime
+
 
 class Scoreboard:
     def __init__(self):
@@ -8,6 +8,7 @@ class Scoreboard:
         self.COMPUTER = {"W":0, "D":0, "L":0}
         self.train_round = 0
         self.last_update = None
+        self.no_games = 0
 
     def update_scores(self, winner):
         if winner=="HUMAN":

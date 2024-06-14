@@ -8,6 +8,7 @@ from shutil import rmtree
 from json import load, loads
 from zipfile import ZipFile
 from pandas import DataFrame
+from datetime import datetime
 import tensorflow_decision_forests as tfdf
 from tf_keras.models import load_model
 
@@ -18,7 +19,21 @@ class MLforKidsNumbers:
         self._scratchkey = key
 
         if modelurl is not None:
-            self.get_model(modelurl)
+            self._message("Checking for downloaded model...")
+            key = self._get_model_key(modelurl)
+            self.model_folder = self._get_saved_model_folder(key)
+            if exists(self.model_folder):
+                self._message("Reusing downloaded model from " + self.model_folder)
+            else:
+                self._download_model(modelurl, self.model_folder)
+
+            self._message("Loading model...")
+            self.MODEL = load_model(self.model_folder)
+
+            self._message("Accessing model metadata...")
+            self.METADATA = self._read_json_file(join(self.model_folder, "mlforkids.json"))
+            self._message("Model trained at " + self.METADATA["lastupdate"])
+
         else:
             self.MODEL = None
 
@@ -142,22 +157,19 @@ class MLforKidsNumbers:
         return e["confidence"]
 
 
-    def get_model(self, modelurl):
-        self._message("Checking for downloaded model...")
-        key = self._get_model_key(modelurl)
-        model_folder = self._get_saved_model_folder(key)
-        if exists(model_folder):
-            self._message("Reusing downloaded model from " + model_folder)
+    def update_model(self, status_url):
+        model_info = self._get_model_info(status_url)
+        if datetime.strptime(model_info["lastupdate"], "%Y-%m-%dT%H:%M:%S.%f") > datetime.strptime(self.METADATA["lastupdate"],"%Y-%m-%dT%H:%M:%S.%f"):
+            self._message("Updating model...")
+            self._download_model(status_url, self.model_folder)
+            self._message("Loading model...")
+            self.MODEL = load_model(self.model_folder)
+            self._message("Accessing model metadata...")
+            self.METADATA = self._read_json_file(join(self.model_folder, "mlforkids.json"))
+            self._message("Model trained at " + self.METADATA["lastupdate"])
         else:
-            self._download_model(modelurl, model_folder)
-
-        self._message("Loading model...")
-        self.MODEL = load_model(model_folder)
-
-        self._message("Accessing model metadata...")
-        self.METADATA = self._read_json_file(join(model_folder, "mlforkids.json"))
-        self._message("Model trained at " + self.METADATA["lastupdate"])
-
+            self._message("No updates to model, please train model before refreshing...")
+            
     #
     # This function will store your data in one of the training
     # buckets in your machine learning project
