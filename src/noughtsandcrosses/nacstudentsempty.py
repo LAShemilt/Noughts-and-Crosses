@@ -568,12 +568,12 @@ def draw_end_screen(winner, screen):
     screen.fill((0, 0, 0))
     font = pygame.font.SysFont('arial', 40)
     title = font.render(end_text, True, WHITE)
-    screen.blit(title, (250- title.get_width()/2, 250/2 - title.get_height()/2))
+    screen.blit(title, (250 - title.get_width()/2, 250/2 - title.get_height()/2))
 
     again_text = 'Play Again?'
     again_img = font.render(again_text, True, WHITE)
     pygame.draw.rect(screen, GREEN, again_rect)
-    screen.blit(again_img, (500 // 2 - 80, 500 // 2 + 10))    
+    screen.blit(again_img, (250 - again_img.get_width()/2, 500 // 2 + 10))    
     pygame.display.update()
 
 class Player:
@@ -592,7 +592,7 @@ def debug(msg):
 
 ### Global Vars
 player = Player()
-again_rect = pygame.Rect(500 // 2 - 80, 500 // 2, 200, 50)
+again_rect = pygame.Rect(500 // 2 -120 , 500 // 2, 250, 60)
 # who the two players are
 HUMAN = "HUMAN"
 COMPUTER = "COMPUTER"
