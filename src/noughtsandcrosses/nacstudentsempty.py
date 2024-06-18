@@ -12,14 +12,20 @@ from .scoreboard import Scoreboard, display_scoreboard
 import dotenv
 
 dotenv.load_dotenv()
+MODEL_URL=os.environ["MODEL_URL"]
 
-project = MLforKidsNumbers( 
-key=os.environ["KEY"],
-modelurl= os.environ["MODEL_URL"]
-)
+if MODEL_URL == 'None':
+    project = MLforKidsNumbers( 
+        
+        key=os.environ["KEY"],
 
+    )
 
-
+else:
+        project = MLforKidsNumbers( 
+                    key=os.environ["KEY"],
+                    modelurl=MODEL_URL
+        )
 
 ############################################################################
 # Constants that match names in your Machine Learning project
