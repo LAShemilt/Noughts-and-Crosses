@@ -8,12 +8,14 @@ import random
 # this module is used to interact with your machine learning project
 from .mlforkidsnumbers import MLforKidsNumbers
 import os
+from .scoreboard import Scoreboard, display_scoreboard
 import dotenv
 
 dotenv.load_dotenv()
 
 project = MLforKidsNumbers( 
-key=os.environ["KEY"]
+key=os.environ["KEY"],
+modelurl= os.environ["MODEL_URL"]
 )
 
 
@@ -151,6 +153,7 @@ def add_to_train(board, who, name_of_space):
 
 
 
+
 # Someone won the game.
 #  A machine learning model could learn from this...
 #
@@ -233,6 +236,8 @@ def get_board_from_perspective(board, who):
         else:
             convertedboard.append(PLAYER if move == who else OPPONENT)
     return convertedboard
+
+
 
 
 
@@ -363,7 +368,8 @@ def display_winner(screen, board, who):
         # refresh the display if we've drawn any game-over lines
         pygame.display.update()
         player.winner=who
-
+        scoreboard.update_scores(player.winner)
+       
     return gameover
 
 
@@ -372,7 +378,7 @@ def display_winner(screen, board, who):
 #
 #  board :  list of board spaces with the contents of each space
 #      e.g.  [ HUMAN, COMPUTER, HUMAN, EMPTY, EMPTY, HUMAN, COMPUTER, HUMAN, COMPUTER ]
-def redraw_screen(screen, colour, board):
+def redraw_screen(screen, colour, board, scoreboard):
     debug("Changing the background colour")
 
     # fill everything in the new background colour
@@ -381,6 +387,9 @@ def redraw_screen(screen, colour, board):
     # now we've covered everything, we need to redraw
     #  the game board again
     draw_game_board(screen)
+
+    # add scoreboard
+    display_scoreboard(scoreboard, screen)
 
     # now we need to redraw all of the moves that
     #  have been made
@@ -525,14 +534,16 @@ def game_move(screen, board, name_of_space, identity):
     if gameover:
         # someone won! maybe an ML project could learn from this
         learn_from_this(identity, gamehistory[identity], decisions[identity])
-           
+        scoreboard.no_games +=1
     # the game is also over if the board is full (a draw!)
     #
     # and the board is full if both players together
     #  have made 9 moves in total
     if len(decisions[HUMAN]) + len(decisions[COMPUTER]) >= 9:
         gameover = True
-
+        if player.winner==0:
+            scoreboard.update_scores("DRAW")
+        scoreboard.no_games +=1
     return gameover
 
 
@@ -548,13 +559,12 @@ def let_computer_play(screen, board):
 # draw end screen
 def draw_end_screen(winner, screen):
     
-    
     if winner != 0:
         end_text = f"{winner} wins!"
+     
     else:  
-        end_text = "You have tied!"
-    
-
+        end_text = "It's a draw!"
+        
     screen.fill((0, 0, 0))
     font = pygame.font.SysFont('arial', 40)
     title = font.render(end_text, True, WHITE)
@@ -563,8 +573,7 @@ def draw_end_screen(winner, screen):
     again_text = 'Play Again?'
     again_img = font.render(again_text, True, WHITE)
     pygame.draw.rect(screen, GREEN, again_rect)
-    screen.blit(again_img, (500 // 2 - 80, 500 // 2 + 10))
-    
+    screen.blit(again_img, (500 // 2 - 80, 500 // 2 + 10))    
     pygame.display.update()
 
 class Player:
@@ -578,12 +587,12 @@ def debug(msg):
     # if something isn't working, uncomment the line below
     #  so you get detailed print-outs of everything that
     #  the program is doing
-    # print(msg)
+    #print(msg)
     pass
 
 ### Global Vars
 player = Player()
-again_rect = pygame.Rect(500 // 2 - 80, 500 // 2, 160, 50)
+again_rect = pygame.Rect(500 // 2 - 80, 500 // 2, 200, 50)
 # who the two players are
 HUMAN = "HUMAN"
 COMPUTER = "COMPUTER"
@@ -600,9 +609,11 @@ decisions = {
     COMPUTER : []
 }
 
+scoreboard = Scoreboard()
+
 
 def main():
-    
+   
     debug("Configuration")
     debug("Using identities %s %s %s" % (EMPTY, PLAYER, OPPONENT))
     debug(deconvert)
@@ -610,7 +621,7 @@ def main():
     debug("Initial startup and setup")
     screen = prepare_game_window()
     board = create_empty_board()
-    redraw_screen(screen, generate_random_colour(), board)
+    redraw_screen(screen, generate_random_colour(), board, scoreboard)
 
     debug("Initialising game state variables")
     running = True
@@ -621,12 +632,22 @@ def main():
     computer_goes_first = random.choice([False, True])
     if computer_goes_first:
             let_computer_play(screen, board)
-            
+    
+
+    
     while running:
         
         # wait for the user to do something...
         event = pygame.event.wait()
+      
+        if scoreboard.no_games == int(os.environ.get("UPDATE_AFTER", 100)):
+            debug("updating model")
+            project.update_model(os.environ["MODEL_URL"])
+            scoreboard.update_train_round(project.METADATA["lastupdate"])
+            scoreboard.no_games=0 #reset the counter
 
+        display_scoreboard(scoreboard, screen)
+        
         if event.type == pygame.QUIT:   
             running = False
 
@@ -638,7 +659,7 @@ def main():
             if location_name == "none":
                 # user clicked on none of the spaces so we'll
                 #  change the colour for them instead!
-                redraw_screen(screen, generate_random_colour(), board)
+                redraw_screen(screen, generate_random_colour(), board, scoreboard)
 
             elif is_space_empty(board, location_name):
                 # the user clicked on an empty space
@@ -655,9 +676,11 @@ def main():
     
 
         elif gameover==True:
+                       
             draw_end_screen( player.winner, screen)
             # check play again
-
+            if event.type == pygame.QUIT:
+                running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
                 
@@ -666,7 +689,7 @@ def main():
                     gameover = False
                     screen = prepare_game_window()
                     board = create_empty_board()
-                    redraw_screen(screen, generate_random_colour(), board)
+                    redraw_screen(screen, generate_random_colour(), board, scoreboard)
                     gamehistory["HUMAN"] =[]
                     gamehistory["COMPUTER"] = []
                         
